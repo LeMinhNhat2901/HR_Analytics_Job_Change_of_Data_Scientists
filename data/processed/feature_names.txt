@@ -1,0 +1,1 @@
+city_development_index\ntraining_hours\ngender\nenrolled_university\neducation_level\nmajor_discipline\nexperience\ncompany_size\ncompany_type\nlast_new_job\ncdi_x_training_hours\n
