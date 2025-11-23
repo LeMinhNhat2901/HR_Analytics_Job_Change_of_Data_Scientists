@@ -270,7 +270,7 @@ class DataVisualizer:
         return fig
     
     def plot_feature_importance(self, importances, feature_names, 
-                               top_n=15, figsize=(10, 8)):
+                           top_n=15, figsize=(10, 8)):
         """
         Vẽ biểu đồ feature importance
         
@@ -279,7 +279,13 @@ class DataVisualizer:
             feature_names: tên các features
             top_n: hiển thị top N features
         """
+        # Ensure importances and feature_names have same length
+        min_len = min(len(importances), len(feature_names))
+        importances = importances[:min_len]
+        feature_names = feature_names[:min_len]
+        
         # Sắp xếp và lấy top N
+        top_n = min(top_n, len(importances))
         sorted_indices = np.argsort(importances)[::-1][:top_n]
         sorted_importances = importances[sorted_indices]
         sorted_names = [feature_names[i] for i in sorted_indices]
@@ -287,17 +293,18 @@ class DataVisualizer:
         fig, ax = plt.subplots(figsize=figsize)
         
         y_pos = np.arange(len(sorted_names))
-        colors = plt.cm.viridis(sorted_importances / sorted_importances.max())
-        
-        ax.barh(y_pos, sorted_importances, color=colors)
+        ax.barh(y_pos, sorted_importances, color='steelblue', alpha=0.8)
         ax.set_yticks(y_pos)
-        ax.set_yticklabels(sorted_names)
-        ax.set_xlabel('Importance Score', fontsize=12)
-        ax.set_title(f'Top {top_n} Feature Importance', 
+        ax.set_yticklabels(sorted_names, fontsize=9)  # Reduce font size
+        ax.set_xlabel('Importance (|Coefficient|)', fontsize=12)
+        ax.set_title(f'Top {top_n} Feature Importances', 
                     fontsize=14, fontweight='bold')
         ax.grid(axis='x', alpha=0.3)
+        ax.invert_yaxis()
         
-        plt.tight_layout()
+        # Use subplots_adjust instead of tight_layout
+        plt.subplots_adjust(left=0.25, right=0.95, top=0.95, bottom=0.08)
+        
         return fig
     
     def plot_roc_curve(self, y_true, y_pred_proba, figsize=(8, 6)):
