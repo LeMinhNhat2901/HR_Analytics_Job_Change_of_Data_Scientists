@@ -162,6 +162,10 @@ cd HR_Analytics_Job_Change_of_Data_Scientists
 
 ### Step 2: Create Virtual Environment (Recommended)
 ```bash
+# If you want to work with conda environment
+conda create -n hr_analysis python=3.10.16 # You can choose other python versions (>=3.8)
+conda activate hr_analysis
+# Or you can do this
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
@@ -212,7 +216,7 @@ After training and evaluation on Test set (20% of dataset):
 | Logistic Regression | 0.7654 | 0.5821 | 0.2456 | 0.3455 | 0.7421 |
 | Naive Bayes | 0.7231 | 0.4512 | 0.5123 | 0.4798 | 0.7102 |
 | KNN (Vectorized) | 0.7456 | 0.5231 | 0.3120 | 0.3909 | 0.6987 |
-| **Neural Network** | **0.7812** | **0.5910** | **0.4821** | **0.5310** | **0.7654** |
+| Neural Network | 0.7812 | 0.5910 | 0.4821 | 0.5310 | 0.7654 |
 
 > **Note:** These metrics are illustrative examples. Please check console logs when running `main.py` for exact values.
 
