@@ -162,6 +162,10 @@ cd HR_Analytics_Job_Change_of_Data_Scientists
 
 ### Step 2: Create Virtual Environment (Recommended)
 ```bash
+# If you want to work with conda environment
+conda create -n hr_analysis python=3.10.16 # You can choose other python versions (>=3.8)
+conda activate hr_analysis
+# Or you can do this
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
