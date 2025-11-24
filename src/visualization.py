@@ -90,7 +90,7 @@ class DataVisualizer:
             fig, ax = plt.subplots(figsize=figsize)
             ax.bar(range(len(unique)), counts, color=self.colors[0])
             ax.set_xticks(range(len(unique)))
-            ax.set_xticklabels(unique, rotation=45, ha='right')
+            ax.set_xticklabels(unique, ha='center')
             ax.set_ylabel('Số lượng')
             ax.set_title(f'Phân phối {feature_name}', fontsize=14, fontweight='bold')
             ax.grid(axis='y', alpha=0.3)
@@ -115,7 +115,7 @@ class DataVisualizer:
                    label='Thay đổi công việc', color='#e74c3c', alpha=0.8)
             
             ax.set_xticks(x)
-            ax.set_xticklabels(unique, rotation=45, ha='right')
+            ax.set_xticklabels(unique, ha='center')
             ax.set_ylabel('Số lượng')
             ax.set_title(f'Phân phối {feature_name} theo Target', 
                         fontsize=14, fontweight='bold')
@@ -166,7 +166,7 @@ class DataVisualizer:
                    cbar_kws={"shrink": 0.8}, ax=ax)
         
         ax.set_title('Correlation Matrix', fontsize=16, fontweight='bold', pad=20)
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(ha='center')
         plt.yticks(rotation=0)
         plt.tight_layout()
         
