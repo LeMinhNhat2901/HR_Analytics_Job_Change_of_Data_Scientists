@@ -54,7 +54,7 @@ class DataVisualizer:
         labels = ['Không thay đổi (0)', 'Thay đổi công việc (1)']
         ax1.bar(range(len(unique)), counts, color=['#3498db', '#e74c3c'])
         ax1.set_xticks(range(len(unique)))
-        ax1.set_xticklabels(labels, rotation=15, ha='right')
+        ax1.set_xticklabels(labels, ha='center')
         ax1.set_ylabel('Số lượng')
         ax1.set_title('Phân phối Target Variable', fontweight='bold')
         ax1.grid(axis='y', alpha=0.3)
@@ -356,4 +356,102 @@ class DataVisualizer:
         ax.grid(alpha=0.3)
         
         plt.tight_layout()
+        return fig
+    
+    def plot_numerical_by_target(self, data, feature_name, target, figsize=(14, 6), plot_type='violin'):
+        """
+        Vẽ phân phối của numerical variable theo target (binary)
+        
+        Args:
+            data: mảng dữ liệu numerical
+            feature_name: tên feature
+            target: mảng target (0/1)
+            plot_type: loại biểu đồ ('violin', 'box', 'both')
+        """
+        fig, axes = plt.subplots(1, 2, figsize=figsize)
+        
+        # Chuẩn bị dữ liệu cho 2 nhóm
+        data_0 = data[target == 0]
+        data_1 = data[target == 1]
+        
+        # ===== Violin Plot (hoặc Box Plot) =====
+        ax1 = axes[0]
+        
+        if plot_type in ['violin', 'both']:
+            # Tạo positions cho violin plot
+            positions = [1, 2]
+            parts = ax1.violinplot([data_0, data_1], positions=positions,
+                                showmeans=True, showmedians=True,
+                                widths=0.7)
+            
+            # Tùy chỉnh màu sắc
+            colors = ['#3498db', '#e74c3c']
+            for i, pc in enumerate(parts['bodies']):
+                pc.set_facecolor(colors[i])
+                pc.set_alpha(0.7)
+                pc.set_edgecolor('black')
+                pc.set_linewidth(1.5)
+            
+            # Tùy chỉnh các thành phần khác
+            for partname in ('cbars', 'cmins', 'cmaxes', 'cmedians', 'cmeans'):
+                if partname in parts:
+                    vp = parts[partname]
+                    vp.set_edgecolor('black')
+                    vp.set_linewidth(1.5)
+            
+            ax1.set_xticks(positions)
+            ax1.set_xticklabels(['Không thay đổi (0)', 'Thay đổi công việc (1)'])
+            ax1.set_ylabel(feature_name, fontsize=12)
+            ax1.set_title(f'Violin Plot - {feature_name} theo Target', 
+                        fontsize=13, fontweight='bold')
+            ax1.grid(axis='y', alpha=0.3)
+            
+        elif plot_type == 'box':
+            # Box plot đơn giản
+            bp = ax1.boxplot([data_0, data_1], positions=[1, 2],
+                            widths=0.6, patch_artist=True,
+                            labels=['Không thay đổi (0)', 'Thay đổi công việc (1)'])
+            
+            colors = ['#3498db', '#e74c3c']
+            for patch, color in zip(bp['boxes'], colors):
+                patch.set_facecolor(color)
+                patch.set_alpha(0.7)
+            
+            ax1.set_ylabel(feature_name, fontsize=12)
+            ax1.set_title(f'Box Plot - {feature_name} theo Target', 
+                        fontsize=13, fontweight='bold')
+            ax1.grid(axis='y', alpha=0.3)
+        
+        # ===== Histogram chồng lấp =====
+        ax2 = axes[1]
+        
+        # Tính range chung để có bins nhất quán
+        data_min = min(data_0.min(), data_1.min())
+        data_max = max(data_0.max(), data_1.max())
+        bins = np.linspace(data_min, data_max, 30)
+        
+        # Vẽ histogram
+        ax2.hist(data_0, bins=bins, alpha=0.6, color='#3498db', 
+                label='Không thay đổi (0)', edgecolor='black', linewidth=0.5)
+        ax2.hist(data_1, bins=bins, alpha=0.6, color='#e74c3c',
+                label='Thay đổi công việc (1)', edgecolor='black', linewidth=0.5)
+        
+        ax2.set_xlabel(feature_name, fontsize=12)
+        ax2.set_ylabel('Frequency', fontsize=12)
+        ax2.set_title(f'Histogram - {feature_name} theo Target', 
+                    fontsize=13, fontweight='bold')
+        ax2.legend(loc='best')
+        ax2.grid(axis='y', alpha=0.3)
+        
+        # Thêm thống kê tóm tắt
+        stats_text = (
+            f"Nhóm 0: μ={data_0.mean():.2f}, σ={data_0.std():.2f}\n"
+            f"Nhóm 1: μ={data_1.mean():.2f}, σ={data_1.std():.2f}"
+        )
+        fig.text(0.5, 0.02, stats_text, ha='center', fontsize=10,
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
+        
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.12)
+        
         return fig
