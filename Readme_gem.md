@@ -212,7 +212,7 @@ After training and evaluation on Test set (20% of dataset):
 | Logistic Regression | 0.7654 | 0.5821 | 0.2456 | 0.3455 | 0.7421 |
 | Naive Bayes | 0.7231 | 0.4512 | 0.5123 | 0.4798 | 0.7102 |
 | KNN (Vectorized) | 0.7456 | 0.5231 | 0.3120 | 0.3909 | 0.6987 |
-| **Neural Network** | **0.7812** | **0.5910** | **0.4821** | **0.5310** | **0.7654** |
+| Neural Network | 0.7812 | 0.5910 | 0.4821 | 0.5310 | 0.7654 |
 
 > **Note:** These metrics are illustrative examples. Please check console logs when running `main.py` for exact values.
 
