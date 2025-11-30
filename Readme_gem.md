@@ -340,12 +340,29 @@ To enhance project results in the future:
 
 Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/LeMinhNhat2901/HR_Analytics_Job_Change_of_Data_Scientists/issues).
 
+**Support & Contact Instructor:** **Lê Nhựt Nam** at lnnam@fit.hcmus.edu.vn
+
+**For Course Questions:**
+- Use the provided ZALO group
+- Office hours as announced
+
 ---
 
 ## 11. License 📜
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is submitted for academic evaluation as part of the *Programming for data science** course.
 
+- **Course**: Programming for data science (Lab 02)
+- **Institution**: Faculty of Information Technology, University of Science (VNU-HCMC)
+- **Instructor**: Lê Nhựt Nam
+- **Academic Year**: 2025-2026
+
+**Academic Integrity Statement:**
+- All code is original work or properly cited
+- External references and libraries are documented
+- Collaboration limited to course-approved discussion
+- No plagiarism or unauthorized code sharing
 ---
 
 ## 📚 References 🔗
@@ -353,6 +370,11 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [Kaggle Dataset](https://www.kaggle.com/arashnic/hr-analytics-job-change-of-data-scientists)
 - [NumPy Documentation](https://numpy.org/doc/)
 - [Machine Learning from Scratch](https://github.com/eriklindernoren/ML-From-Scratch)
+
+---
+
+**© 2025 University of Science (VNU-HCMC)**  
+*Developed for Programming for data science*
 
 ---
 
