@@ -329,11 +329,12 @@ To enhance project results in the future:
 
 **Project developed by:**
 
-- **Name:** [Tên của bạn]
-- **Student ID:** [Mã Số Sinh Viên]
-- **Class:** [Lớp của bạn]
+- **Name:** Lê Minh Nhật
+- **Student ID:** 23120067
+- **Class:** CQ2023/21
+- **School:** HCMUS
 - **GitHub:** [@LeMinhNhat2901](https://github.com/LeMinhNhat2901)
-- **Email:** [Email của bạn]
+- **Email:** nhat29012005@gmail.com
 
 ### 🤝 Contributing
 
