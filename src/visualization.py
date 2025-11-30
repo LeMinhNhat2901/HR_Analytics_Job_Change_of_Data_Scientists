@@ -315,38 +315,35 @@ class DataVisualizer:
             y_true: nhãn thực tế
             y_pred_proba: xác suất dự đoán
         """
-        # Tính TPR và FPR cho các threshold khác nhau
-        thresholds = np.linspace(0, 1, 100)
-        tpr_list = []
-        fpr_list = []
+        # Sắp xếp theo probability giảm dần
+        desc_score_indices = np.argsort(y_pred_proba)[::-1]
+        y_true_sorted = y_true[desc_score_indices]
+        y_score_sorted = y_pred_proba[desc_score_indices]
         
-        for threshold in thresholds:
-            y_pred = (y_pred_proba >= threshold).astype(int)
-            
-            tp = np.sum((y_true == 1) & (y_pred == 1))
-            fp = np.sum((y_true == 0) & (y_pred == 1))
-            tn = np.sum((y_true == 0) & (y_pred == 0))
-            fn = np.sum((y_true == 1) & (y_pred == 0))
-            
-            tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
-            fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
-            
-            tpr_list.append(tpr)
-            fpr_list.append(fpr)
+        # Tính số lượng Positive và Negative
+        n_pos = np.sum(y_true == 1)
+        n_neg = np.sum(y_true == 0)
         
-        # Tính AUC sử dụng trapezoidal rule
-        fpr_array = np.array(fpr_list)
-        tpr_array = np.array(tpr_list)
-        sorted_indices = np.argsort(fpr_array)
-        fpr_sorted = fpr_array[sorted_indices]
-        tpr_sorted = tpr_array[sorted_indices]
+        if n_pos == 0 or n_neg == 0:
+            print("Warning: Cannot plot ROC curve with only one class")
+            return None
         
-        auc = np.trapz(tpr_sorted, fpr_sorted)
+        # Vectorized: Tính cumulative TP và FP
+        tpr = np.cumsum(y_true_sorted) / n_pos
+        fpr = np.cumsum(1 - y_true_sorted) / n_neg
         
+        # Thêm điểm (0,0) vào đầu
+        tpr = np.concatenate([[0], tpr])
+        fpr = np.concatenate([[0], fpr])
+        
+        # Tính AUC bằng trapezoidal rule
+        auc = np.trapz(tpr, fpr)
+        
+        # Vẽ biểu đồ
         fig, ax = plt.subplots(figsize=figsize)
         
-        ax.plot(fpr_list, tpr_list, color='#e74c3c', linewidth=2,
-               label=f'ROC curve (AUC = {auc:.3f})')
+        ax.plot(fpr, tpr, color='#e74c3c', linewidth=2,
+            label=f'ROC curve (AUC = {auc:.3f})')
         ax.plot([0, 1], [0, 1], 'k--', linewidth=1, label='Random Classifier')
         
         ax.set_xlabel('False Positive Rate', fontsize=12)

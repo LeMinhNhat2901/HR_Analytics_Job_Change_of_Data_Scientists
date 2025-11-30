@@ -27,9 +27,7 @@ class DataProcessor:
         # Lưu tên các feature sau khi xử lý xong
         self.feature_names_processed = []
         
-    # =========================================================================
     # 1. BASIC I/O & UTILS
-    # =========================================================================
     
     def load_csv(self, filepath, delimiter=','):
         """Đọc file CSV và trả về numpy array + headers"""
@@ -71,43 +69,40 @@ class DataProcessor:
         
         return X[train_indices], X[test_indices], y[train_indices], y[test_indices]
 
-    # =========================================================================
     # 2. LOW-LEVEL PROCESSING FUNCTIONS (STATEFUL)
-    # =========================================================================
+    
     def check_missing_values(self, data):
         """
-        Kiểm tra missing values trong dữ liệu
+        Kiểm tra missing values trong dữ liệu (VECTORIZED)
         
         Returns:
             missing_mask: boolean array đánh dấu missing values
             missing_count: số lượng missing values mỗi cột
         """
-        # Xác định missing values (empty string, 'nan', 'NaN', None)
-        missing_mask = np.zeros(data.shape, dtype=bool)
+        # Vectorized: Kiểm tra empty string
+        empty_mask = (data == '') | (data == 'nan') | (data == 'NaN')
         
-        for i in range(data.shape[1]):
-            col = data[:, i]
-            mask = np.array([
-                (val == '' or val == 'nan' or val == 'NaN' or 
-                 val is None or str(val).lower() == 'nan')
-                for val in col
-            ])
-            missing_mask[:, i] = mask
+        # Vectorized: Kiểm tra None
+        none_mask = (data == None)
+        
+        # Vectorized: Kiểm tra 'nan' case-insensitive
+        # Sử dụng np.char.lower cho string arrays
+        lower_data = np.char.lower(data.astype(str))
+        nan_str_mask = (lower_data == 'nan')
+        
+        # Kết hợp các điều kiện
+        missing_mask = empty_mask | none_mask | nan_str_mask
         
         missing_count = np.sum(missing_mask, axis=0)
         return missing_mask, missing_count
 
     def fill_missing_categorical(self, column, fill_value=None, strategy='mode'):
         """
-        Điền missing values (Stateful).
-        - Nếu fill_value là None (Train phase): Tự tính mode và trả về.
-        - Nếu fill_value có giá trị (Test phase): Dùng giá trị đó để điền.
+        Điền missing values (Stateful) - VECTORIZED
         """
-        # Tạo mask cho các giá trị thiếu
-        mask = np.array([
-            val in ['', 'nan', 'NaN', None] or str(val).lower() == 'nan' 
-            for val in column
-        ])
+        # Vectorized: Tạo mask cho các giá trị thiếu
+        mask = (column == '') | (column == 'nan') | (column == 'NaN') | \
+            (column == None) | (np.char.lower(column.astype(str)) == 'nan')
         
         # Nếu chưa có giá trị fill (Train phase), hãy tính toán nó
         if fill_value is None:
@@ -129,23 +124,43 @@ class DataProcessor:
 
     def fill_missing_numerical(self, column, fill_value=None, strategy='median'):
         """
-        Điền missing numerical (Stateful).
-        Trả về: (cột đã điền, giá trị fill đã dùng)
+        Điền missing numerical (Stateful) - VECTORIZED
         """
-        # Tạo mask
-        mask = np.array([
-            val in ['', 'nan', 'NaN', None] or str(val).lower() == 'nan' 
-            for val in column
-        ])
+        # Convert toàn bộ column sang string để xử lý đồng nhất
+        col_str = column.astype(str)
         
-        # Chuyển sang float an toàn
+        # Vectorized - Tạo mask cho missing values
+        # Sử dụng np.char cho string operations (nhanh hơn list comprehension)
+        mask = (col_str == '') | \
+            (col_str == 'nan') | \
+            (col_str == 'NaN') | \
+            (col_str == 'None') | \
+            (np.char.lower(col_str) == 'nan')
+        
+        # Vectorized - Chuyển sang float an toàn
         col_float = np.zeros(len(column), dtype=float)
-        for i, val in enumerate(column):
-            if not mask[i]:
-                try:
-                    col_float[i] = float(val)
-                except:
-                    mask[i] = True # Nếu lỗi parse thì coi là missing
+        
+        # Thử convert toàn bộ array cùng lúc
+        with np.errstate(invalid='ignore', over='ignore'):
+            try:
+                # Thay thế missing values bằng 'nan' trước khi convert
+                col_temp = np.where(mask, 'nan', col_str)
+                col_float = col_temp.astype(float)
+                
+                # Cập nhật mask: bao gồm cả các giá trị không convert được
+                mask = np.isnan(col_float)
+                
+            except (ValueError, TypeError):
+                # Fallback: Nếu không convert được hàng loạt, dùng vectorize
+                def safe_float(x):
+                    try:
+                        return float(x)
+                    except:
+                        return np.nan
+                
+                vec_float = np.vectorize(safe_float)
+                col_float = vec_float(col_str)
+                mask = np.isnan(col_float)
         
         # Tính toán giá trị fill nếu chưa có (Train phase)
         if fill_value is None:
@@ -160,7 +175,9 @@ class DataProcessor:
             else:
                 fill_value = 0.0
         
+        # Điền missing values
         col_float[mask] = fill_value
+        
         return col_float, fill_value
 
     def encode_categorical(self, column, mapping=None):
@@ -174,15 +191,16 @@ class DataProcessor:
             unique_values = np.unique(column)
             mapping = {val: idx for idx, val in enumerate(unique_values)}
         
-        # 2. Transform Phase: Map dữ liệu
-        # get(val, 0): Nếu gặp giá trị lạ chưa từng thấy, gán tạm là 0 (hoặc -1 tùy chọn)
-        encoded = np.array([mapping.get(val, 0) for val in column])
+        # 2. Transform Phase: Map dữ liệu - VECTORIZED
+        # Tạo vectorized function từ dict mapping
+        vec_map = np.vectorize(lambda x: mapping.get(x, 0))
+        encoded = vec_map(column)
         
         return encoded, mapping
 
     def one_hot_encode(self, col, categories=None):
         """
-        One-Hot Encoding (Stateful) - Sử dụng Broadcasting.
+        One-Hot Encoding (Stateful) - Sử dụng Broadcasting, vectorized
         """
         # 1. Train Phase: Học categories
         if categories is None:
@@ -190,24 +208,16 @@ class DataProcessor:
             
         mapping = {v: i for i, v in enumerate(categories)}
         
-        # 2. Transform Phase
-        idx_list = []
-        valid_mask = []
+        # 2. Transform Phase - VECTORIZED
+        # Tạo vectorized function để map
+        vec_map = np.vectorize(lambda x: mapping.get(x, 0))
+        idx = vec_map(col)
         
-        for v in col:
-            if v in mapping:
-                idx_list.append(mapping[v])
-                valid_mask.append(True)
-            else:
-                # Giá trị lạ trong Test set -> Gán index 0 tạm, nhưng đánh dấu False
-                idx_list.append(0)
-                valid_mask.append(False)
-                
-        idx = np.array(idx_list)
-        valid_mask = np.array(valid_mask)[:, None] # Shape (N, 1)
+        # Valid mask: True nếu giá trị có trong mapping
+        vec_check = np.vectorize(lambda x: x in mapping)
+        valid_mask = vec_check(col)[:, None]  # Shape (N, 1)
 
         # 3. Broadcasting: Tạo One-Hot Matrix
-        # So sánh vector cột idx với vector hàng [0, 1, 2...]
         one_hot = (idx[:, None] == np.arange(len(categories))).astype(float)
         
         # Xóa các dòng không hợp lệ (giá trị lạ) thành toàn số 0
@@ -234,9 +244,7 @@ class DataProcessor:
         normalized = (column - col_min) / (col_max - col_min)
         return normalized, params
 
-    # =========================================================================
     # 3. MAIN PIPELINES (FIT_TRANSFORM & TRANSFORM)
-    # =========================================================================
 
     def fit_transform_features(self, data, headers, target, ordinal_features, nominal_features, numerical_features):
         """
@@ -366,9 +374,7 @@ class DataProcessor:
 
         return np.column_stack(X_processed)
 
-    # =========================================================================
     # 4. UTILS (CORRELATION, ETC.)
-    # =========================================================================
     
     def detect_outliers_iqr(self, column, multiplier=1.5):
         """
@@ -572,13 +578,31 @@ class DataProcessor:
         return numerator / denominator
     
     def compute_correlation_matrix(self, data):
-        """Tính ma trận correlation"""
-        n_features = data.shape[1]
-        corr_matrix = np.zeros((n_features, n_features))
-        for i in range(n_features):
-            for j in range(n_features):
-                if i == j: corr_matrix[i, j] = 1.0
-                else: corr_matrix[i, j] = self.calculate_correlation(data[:, i], data[:, j])
+        """
+        Tính ma trận correlation - VECTORIZED
+        Sử dụng công thức ma trận: Corr = (X - μ)ᵀ(X - μ) / (n * σ_i * σ_j)
+        """
+        n_samples, n_features = data.shape
+        
+        # Chuẩn hóa dữ liệu (mean=0)
+        data_centered = data - np.mean(data, axis=0, keepdims=True)
+        
+        # Tính standard deviation cho mỗi feature
+        std_devs = np.std(data, axis=0)
+        
+        # Tránh chia cho 0
+        std_devs[std_devs == 0] = 1e-10
+        
+        # Chuẩn hóa (z-score normalization)
+        data_normalized = data_centered / std_devs
+        
+        # Tính correlation matrix = (1/n) * X_normalized^T @ X_normalized
+        # Đây là HOÀN TOÀN VECTORIZED - không có loop
+        corr_matrix = (1 / n_samples) * np.dot(data_normalized.T, data_normalized)
+        
+        # Đảm bảo diagonal = 1 (do numerical errors)
+        np.fill_diagonal(corr_matrix, 1.0)
+        
         return corr_matrix
     
     def get_statistics(self, column):

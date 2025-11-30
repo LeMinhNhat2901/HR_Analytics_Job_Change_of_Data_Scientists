@@ -232,28 +232,38 @@ class NaiveBayes:
     def predict_proba(self, X):
         """Dự đoán xác suất cho mỗi class"""
         n_samples = X.shape[0]
-        probas = np.zeros((n_samples, len(self.classes)))
+        n_features = X.shape[1]
+        n_classes = len(self.classes)
         
-        for sample_idx in range(n_samples):
+        # Ma trận log probabilities (n_samples, n_classes)
+        log_probas = np.zeros((n_samples, n_classes))
+        
+        # Vectorized: Tính log prior cho tất cả classes
+        for class_idx, c in enumerate(self.classes):
+            log_probas[:, class_idx] = np.log(self.class_priors[c])
+        
+        # Vectorized: Tính likelihood cho từng feature
+        for feature_idx in range(n_features):
+            X_feature = X[:, feature_idx]  # (n_samples,)
+            
             for class_idx, c in enumerate(self.classes):
-                # Bắt đầu với prior probability
-                log_prob = np.log(self.class_priors[c])
+                params = self.feature_params[feature_idx][c]
                 
-                # Nhân với likelihood của mỗi feature (sử dụng log để tránh underflow)
-                for feature_idx in range(X.shape[1]):
-                    x_val = X[sample_idx, feature_idx]
-                    params = self.feature_params[feature_idx][c]
-                    
-                    prob = self.gaussian_probability(
-                        x_val, params['mean'], params['std']
-                    )
-                    log_prob += np.log(prob + 1e-10)  # Thêm epsilon
+                # Vectorized Gaussian probability cho toàn bộ samples
+                mean = params['mean']
+                std = params['std']
                 
-                probas[sample_idx, class_idx] = log_prob
+                # Tính cho tất cả samples cùng lúc
+                exponent = -((X_feature - mean) ** 2) / (2 * std ** 2)
+                coefficient = 1 / (np.sqrt(2 * np.pi) * std)
+                prob = coefficient * np.exp(exponent)
+                
+                # Cộng log probability
+                log_probas[:, class_idx] += np.log(prob + 1e-10) #Thêm epsilon
         
-        # Convert log probabilities back to probabilities
-        probas = np.exp(probas)
-        # Normalize
+        # Chuyển log probabilities về probabilities
+        probas = np.exp(log_probas)
+        # Chuẩn hóa
         probas = probas / np.sum(probas, axis=1, keepdims=True)
         
         return probas

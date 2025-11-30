@@ -256,7 +256,7 @@ def main():
     print("1. Kiểm tra thư mục results/figures/ để xem biểu đồ.")
     print("2. Điều chỉnh tham số models (learning rate, k, etc.) trong main.py để cải thiện kết quả.")
     # -------------------------------------------------------------------------
-    # [PHẦN THAY THẾ] 4. GENERATE PROBABILITY SUBMISSION FILE
+    # [PHẦN THAY THẾ] 4. GENERATE PROBABILITY SUBMISSION FILE - VECTORIZED
     # -------------------------------------------------------------------------
     print("\nĐang tạo file submission dạng xác suất (Probability)...")
 
@@ -268,48 +268,48 @@ def main():
         print(f"Loaded submission data: {X_sub.shape}")
         
         # 2. Chọn model tốt nhất để dự đoán
-        # (Giả sử best_model đã được xác định ở bước trước đó)
-        # Hoặc bạn có thể chỉ định đích danh: model = models['Logistic Regression']
         best_model_name = best_model[0]
         model_to_use = models[best_model_name] 
         print(f"Using model: {best_model_name} for prediction...")
 
-        # 3. DỰ ĐOÁN XÁC SUẤT (Thay vì predict nhãn)
+        # 3. DỰ ĐOÁN XÁC SUẤT
         if hasattr(model_to_use, 'predict_proba'):
             y_sub_prob = model_to_use.predict_proba(X_sub)
             
-            # --- XỬ LÝ SHAPE CỦA OUTPUT ---
-            # Các model khác nhau có thể trả về shape khác nhau
-            
-            # Trường hợp 1: Model trả về (N, 2) -> Lấy cột 1 (xác suất của class 1)
-            # (Thường gặp ở Naive Bayes hoặc Sklearn)
+            # Xử lý shape của output
             if y_sub_prob.ndim == 2 and y_sub_prob.shape[1] == 2:
                 y_sub_prob = y_sub_prob[:, 1]
-            
-            # Trường hợp 2: Model trả về (N, 1) -> Flatten thành (N,)
-            # (Thường gặp ở Neural Network)
             elif y_sub_prob.ndim == 2 and y_sub_prob.shape[1] == 1:
                 y_sub_prob = y_sub_prob.flatten()
                 
-            # Trường hợp 3: Model trả về (N,) -> Giữ nguyên
-            # (Logistic Regression, KNN)
-            
         else:
             print("Model này không hỗ trợ xuất xác suất! Đang dùng nhãn 0/1 thay thế.")
             y_sub_prob = model_to_use.predict(X_sub).astype(float)
 
-        # 4. Lưu file CSV
+        # 4. LƯU FILE CSV - VECTORIZED (KHÔNG DÙNG LOOP)
         output_dir = os.path.join(os.path.dirname(__file__), 'results')
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, 'submission_proba.csv')
         
-        with open(output_path, 'w') as f:
-            f.write("enrollee_id,target\n") # Header
-            for eid, prob in zip(sub_ids, y_sub_prob):
-                # eid: ID nhân viên
-                # prob: Xác suất nghỉ việc (VD: 0.8234)
-                # {:.4f} để làm tròn 4 chữ số thập phân cho gọn
-                f.write(f"{int(float(eid))},{prob:.4f}\n")
+        # Vectorized: Convert sub_ids sang int
+        sub_ids_int = sub_ids.astype(float).astype(int)
+        
+        # Vectorized: Format probabilities thành string với 4 chữ số thập phân
+        y_sub_prob_str = np.char.mod('%.4f', y_sub_prob)
+        
+        # Vectorized: Kết hợp IDs và probabilities
+        # Sử dụng np.column_stack để ghép 2 arrays
+        output_data = np.column_stack([sub_ids_int.astype(str), y_sub_prob_str])
+        
+        # Ghi file sử dụng np.savetxt (HOÀN TOÀN VECTORIZED)
+        np.savetxt(
+            output_path,
+            output_data,
+            fmt='%s',  # String format
+            delimiter=',',
+            header='enrollee_id,target',
+            comments=''  # Tắt comment prefix
+        )
                 
         print(f"Đã lưu file xác suất tại: {output_path}")
         
@@ -317,6 +317,8 @@ def main():
         print("Lỗi: Không tìm thấy file dữ liệu submission. Hãy chạy Preprocessing trước!")
     except Exception as e:
         print(f"Lỗi không mong muốn: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
