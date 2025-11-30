@@ -200,7 +200,7 @@ class DataProcessor:
 
     def one_hot_encode(self, col, categories=None):
         """
-        One-Hot Encoding (Stateful) - Sử dụng Broadcasting, vectorized
+        One-Hot Encoding (Stateful) - ADVANCED INDEXING
         """
         # 1. Train Phase: Học categories
         if categories is None:
@@ -209,19 +209,25 @@ class DataProcessor:
         mapping = {v: i for i, v in enumerate(categories)}
         
         # 2. Transform Phase - VECTORIZED
-        # Tạo vectorized function để map
-        vec_map = np.vectorize(lambda x: mapping.get(x, 0))
+        vec_map = np.vectorize(lambda x: mapping.get(x, -1))  # -1 cho unknown
         idx = vec_map(col)
         
         # Valid mask: True nếu giá trị có trong mapping
-        vec_check = np.vectorize(lambda x: x in mapping)
-        valid_mask = vec_check(col)[:, None]  # Shape (N, 1)
-
-        # 3. Broadcasting: Tạo One-Hot Matrix
-        one_hot = (idx[:, None] == np.arange(len(categories))).astype(float)
+        valid_mask = (idx >= 0)
         
-        # Xóa các dòng không hợp lệ (giá trị lạ) thành toàn số 0
-        one_hot = one_hot * valid_mask
+        # 3. ADVANCED INDEXING: Tạo One-Hot Matrix hiệu quả hơn
+        n_samples = len(col)
+        n_categories = len(categories)
+        
+        # Khởi tạo ma trận zero
+        one_hot = np.zeros((n_samples, n_categories), dtype=float)
+        
+        # FANCY INDEXING: Gán 1 vào đúng vị trí
+        # one_hot[row_indices, col_indices] = 1
+        valid_rows = np.where(valid_mask)[0]  # Lấy indices của valid samples
+        valid_cols = idx[valid_mask]           # Lấy category indices tương ứng
+        
+        one_hot[valid_rows, valid_cols] = 1.0  # Advanced indexing thay vì broadcasting
         
         return one_hot, categories
 
@@ -579,8 +585,10 @@ class DataProcessor:
     
     def compute_correlation_matrix(self, data):
         """
-        Tính ma trận correlation - VECTORIZED
-        Sử dụng công thức ma trận: Corr = (X - μ)ᵀ(X - μ) / (n * σ_i * σ_j)
+        Tính ma trận correlation - SỬ DỤNG np.einsum
+        
+        np.einsum là công cụ mạnh nhất của NumPy cho tensor operations
+        Hiệu quả hơn np.dot() khi làm việc với large matrices
         """
         n_samples, n_features = data.shape
         
@@ -589,16 +597,17 @@ class DataProcessor:
         
         # Tính standard deviation cho mỗi feature
         std_devs = np.std(data, axis=0)
-        
-        # Tránh chia cho 0
-        std_devs[std_devs == 0] = 1e-10
+        std_devs[std_devs == 0] = 1e-10  # Tránh chia cho 0
         
         # Chuẩn hóa (z-score normalization)
         data_normalized = data_centered / std_devs
         
-        # Tính correlation matrix = (1/n) * X_normalized^T @ X_normalized
-        # Đây là HOÀN TOÀN VECTORIZED - không có loop
-        corr_matrix = (1 / n_samples) * np.dot(data_normalized.T, data_normalized)
+        # SỬ DỤNG np.einsum thay vì np.dot()
+        # 'ij,ik->jk' có nghĩa là:
+        #   i: sample axis
+        #   j, k: feature axes
+        # Tương đương: data_normalized.T @ data_normalized
+        corr_matrix = np.einsum('ij,ik->jk', data_normalized, data_normalized) / n_samples
         
         # Đảm bảo diagonal = 1 (do numerical errors)
         np.fill_diagonal(corr_matrix, 1.0)

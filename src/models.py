@@ -273,61 +273,6 @@ class NaiveBayes:
         probas = self.predict_proba(X)
         return self.classes[np.argmax(probas, axis=1)]
 
-
-# class KNearestNeighbors:
-#     """
-#     K-Nearest Neighbors được implement từ đầu bằng NumPy
-#     """
-    
-#     def __init__(self, k=5, metric='euclidean'):
-#         """
-#         Args:
-#             k: số lượng neighbors
-#             metric: 'euclidean' hoặc 'manhattan'
-#         """
-#         self.k = k
-#         self.metric = metric
-#         self.X_train = None
-#         self.y_train = None
-    
-#     def fit(self, X, y):
-#         """Lưu training data"""
-#         self.X_train = X
-#         self.y_train = y
-#         return self
-    
-#     def euclidean_distance(self, x1, x2):
-#         """Khoảng cách Euclidean: √(Σ(x1 - x2)²)"""
-#         return np.sqrt(np.sum((x1 - x2) ** 2))
-    
-#     def manhattan_distance(self, x1, x2):
-#         """Khoảng cách Manhattan: Σ|x1 - x2|"""
-#         return np.sum(np.abs(x1 - x2))
-    
-#     def predict(self, X):
-#         """Dự đoán cho dữ liệu mới"""
-#         predictions = np.zeros(X.shape[0])
-        
-#         for i, x in enumerate(X):
-#             # Tính khoảng cách đến tất cả training samples
-#             distances = np.zeros(len(self.X_train))
-            
-#             for j, x_train in enumerate(self.X_train):
-#                 if self.metric == 'euclidean':
-#                     distances[j] = self.euclidean_distance(x, x_train)
-#                 else:
-#                     distances[j] = self.manhattan_distance(x, x_train)
-            
-#             # Lấy k nearest neighbors
-#             k_indices = np.argsort(distances)[:self.k]
-#             k_nearest_labels = self.y_train[k_indices]
-            
-#             # Voting: lấy class xuất hiện nhiều nhất
-#             unique, counts = np.unique(k_nearest_labels, return_counts=True)
-#             predictions[i] = unique[np.argmax(counts)]
-        
-#         return predictions
-
 class KNearestNeighbors:
     """
     K-Nearest Neighbors với Vectorization (Nhanh hơn)
@@ -347,11 +292,17 @@ class KNearestNeighbors:
     def compute_distances_vectorized(self, X):
         """Tính khoảng cách Euclidean bằng ma trận (nhanh hơn vòng lặp)"""
         # Công thức: ||A - B||^2 = ||A||^2 + ||B||^2 - 2A.B^T
-        X_sq = np.sum(X**2, axis=1, keepdims=True)
-        X_train_sq = np.sum(self.X_train**2, axis=1)
-        dot_product = -2 * np.dot(X, self.X_train.T)
+        # Sử dụng np.einsum thay vì X**2
+        # 'ij,ij->i': sum of element-wise product along axis 1
+        X_sq = np.einsum('ij,ij->i', X, X)[:, None]  # Shape: (n_test, 1)
+        X_train_sq = np.einsum('ij,ij->i', self.X_train, self.X_train)  # Shape: (n_train,)
         
-        dists_sq = X_sq + X_train_sq + dot_product
+        # np.einsum thay vì np.dot(X, X_train.T)
+        # 'ij,kj->ik': (n_test, n_features) x (n_train, n_features) -> (n_test, n_train)
+        dot_product = np.einsum('ij,kj->ik', X, self.X_train)
+        
+        # Broadcasting: (n_test, 1) + (n_train,) + (n_test, n_train)
+        dists_sq = X_sq + X_train_sq - 2 * dot_product
         return np.sqrt(np.maximum(dists_sq, 0))
 
     def predict_proba(self, X):

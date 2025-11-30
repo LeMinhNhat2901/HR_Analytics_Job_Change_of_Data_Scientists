@@ -246,14 +246,27 @@ class DataVisualizer:
             y_true: nhãn thực tế
             y_pred: nhãn dự đoán
         """
-        # Tính confusion matrix
-        classes = np.unique(y_true)
-        cm = np.zeros((len(classes), len(classes)), dtype=int)
+        # Tính confusion matrix - VECTORIZED
+        classes = np.unique(np.concatenate([y_true, y_pred]))
+        n_classes = len(classes)
         
-        for i, true_class in enumerate(classes):
-            for j, pred_class in enumerate(classes):
-                cm[i, j] = np.sum((y_true == true_class) & (y_pred == pred_class))
+        # Tạo mapping từ class label -> index
+        class_to_idx = {c: i for i, c in enumerate(classes)}
         
+        # Convert labels sang indices
+        y_true_idx = np.array([class_to_idx[c] for c in y_true])
+        y_pred_idx = np.array([class_to_idx[c] for c in y_pred])
+        
+        # ADVANCED INDEXING: Tính confusion matrix
+        # Sử dụng np.bincount với flattened indices
+        cm = np.zeros((n_classes, n_classes), dtype=int)
+        
+        # Flatten 2D indices thành 1D: row * n_cols + col
+        flat_indices = y_true_idx * n_classes + y_pred_idx
+        counts = np.bincount(flat_indices, minlength=n_classes * n_classes)
+        cm = counts.reshape(n_classes, n_classes)
+        
+        # Vẽ biểu đồ
         fig, ax = plt.subplots(figsize=figsize)
         
         # Vẽ heatmap
