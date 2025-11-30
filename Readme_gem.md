@@ -10,29 +10,29 @@ A comprehensive machine learning project predicting data scientist job changes u
 
 ---
 
-## 📑 Table of Contents
+## 📚 Table of Contents
 
-1. [Introduction](#1-introduction)
-2. [Dataset](#2-dataset)
-3. [Methodology](#3-methodology)
-4. [Installation & Setup](#4-installation--setup)
-5. [Usage](#5-usage)
-6. [Results](#6-results)
-7. [Project Structure](#7-project-structure)
-8. [Challenges & Solutions](#8-challenges--solutions)
-9. [Future Improvements](#9-future-improvements)
-10. [Contributors](#10-contributors)
-11. [License](#11-license)
+1. [Introduction 🔎](#1-introduction)
+2. [Dataset 📂](#2-dataset)
+3. [Methodology 🛠️](#3-methodology)
+4. [Installation & Setup ⚙️](#4-installation--setup)
+5. [Usage ▶️](#5-usage)
+6. [Results 🏆](#6-results)
+7. [Project Structure 🗂️](#7-project-structure)
+8. [Challenges & Solutions ⚔️](#8-challenges--solutions)
+9. [Future Improvements 🚀](#9-future-improvements)
+10. [Contributors 👥](#10-contributors)
+11. [License 📜](#11-license)
 
 ---
 
-## 1. Introduction
+## 1. Introduction 🔎
 
-### 1.1 Problem Statement
+### 1.1 Problem Statement 🧭
 
 A company operating in the Big Data and Data Science domain wants to hire data scientists. After recruitment and training, many employees decide to leave for new opportunities. This causes significant waste in time and training costs.
 
-### 1.2 Motivation & Real-world Applications
+### 1.2 Motivation & Real-world Applications 💡
 
 Predicting which candidates are likely to change jobs immediately after training helps the company:
 
@@ -40,25 +40,25 @@ Predicting which candidates are likely to change jobs immediately after training
 - **Focus resources on candidates committed to long-term engagement**
 - **Understand factors influencing employee turnover decisions**
 
-### 1.3 Specific Objectives
+### 1.3 Specific Objectives 🎯
 
 - Build a complete data processing pipeline and train models to predict the probability of candidates seeking new jobs (Target = 1) or staying (Target = 0)
 - **Technical Requirements:** Use only NumPy to build algorithms (Logistic Regression, KNN, Naive Bayes, Neural Network) and data processing techniques (Encoding, Scaling, Imputation)
 
 ---
 
-## 2. Dataset
+## 2. Dataset 📂
 
-### 2.1 Data Source
+### 2.1 Data Source 🌐
 
 Dataset obtained from Kaggle: [HR Analytics: Job Change of Data Scientists](https://www.kaggle.com/arashnic/hr-analytics-job-change-of-data-scientists)
 
-### 2.2 Data Characteristics
+### 2.2 Data Characteristics 📈
 
 - **Size:** Approximately 19,000 rows of candidate information
 - **Imbalanced Data:** Class 0 (Not changing jobs) significantly outnumbers Class 1 (Changing jobs)
 
-### 2.3 Key Features Description
+### 2.3 Key Features Description 📝
 
 The dataset includes both Categorical and Numerical features:
 
@@ -75,28 +75,28 @@ The dataset includes both Categorical and Numerical features:
 
 ---
 
-## 3. Methodology
+## 3. Methodology 🛠️
 
 This project applies standard Data Science workflow but is entirely hand-coded using NumPy.
 
-### 3.1 Data Processing Pipeline (`src/data_processing.py`)
+### 3.1 Data Processing Pipeline (`src/data_processing.py`) 🧰
 
 I built a `DataProcessor` class supporting "Fit & Transform" methodology to prevent Data Leakage:
 
-#### **Missing Value Imputation**
+#### **Missing Value Imputation** 🩺
 - **Numerical:** Fill with Median
 - **Categorical:** Fill with Mode (most frequent value)
 
-#### **Encoding**
+#### **Encoding** 🔤
 - **Ordinal Encoding:** Map ordered variables (e.g., `education_level`) to integers
 - **One-Hot Encoding:** Use NumPy Broadcasting technique to create binary matrices for Nominal variables
 
-#### **Scaling**
+#### **Scaling** 📏
 - **Min-Max Normalization:** Scale data to range [0, 1]
 
-### 3.2 Algorithms Used (`src/models.py`)
+### 3.2 Algorithms Used (`src/models.py`) 🤖
 
-#### a. Logistic Regression
+#### a. Logistic Regression 📉
 
 Uses Gradient Descent to optimize Binary Cross-Entropy loss function.
 
@@ -110,7 +110,7 @@ $$J(w,b) = -\frac{1}{m} \sum_{i=1}^{m} [y^{(i)}\log(\hat{y}^{(i)}) + (1-y^{(i)})
 - Manual gradient computation using matrix operations
 - Vectorized update rules: `w = w - learning_rate * dw`
 
-#### b. Naive Bayes (Gaussian)
+#### b. Naive Bayes (Gaussian) 🧮
 
 Calculates probabilities based on Bayes' theorem with independent feature assumption.
 
@@ -121,7 +121,7 @@ $$P(x_i|y) = \frac{1}{\sqrt{2\pi\sigma_y^2}} \exp\left(-\frac{(x_i - \mu_y)^2}{2
 - Calculate mean and variance per class using `np.mean()` and `np.var()`
 - Apply log probabilities to prevent numerical underflow
 
-#### c. K-Nearest Neighbors (Vectorized)
+#### c. K-Nearest Neighbors (Vectorized) 👥
 
 Fully vectorized implementation (no loops for distance computation) for speed optimization.
 
@@ -134,7 +134,7 @@ $$||A - B||^2 = ||A||^2 + ||B||^2 - 2AB^T$$
 dists = np.sum(X_train**2, axis=1) + np.sum(X_test**2, axis=1)[:, np.newaxis] - 2 * np.dot(X_test, X_train.T)
 ```
 
-#### d. Neural Network (MLP)
+#### d. Neural Network (MLP) 🧠
 
 2-layer neural network (Input → Hidden → Output) with manual Backpropagation.
 
@@ -148,19 +148,19 @@ dists = np.sum(X_train**2, axis=1) + np.sum(X_test**2, axis=1)[:, np.newaxis] - 
 
 ---
 
-## 4. Installation & Setup
+## 4. Installation & Setup ⚙️
 
-### Prerequisites
+### Prerequisites 🧾
 - Python 3.8 or higher
 - pip package manager
 
-### Step 1: Clone Repository
+### Step 1: Clone Repository 📥
 ```bash
 git clone https://github.com/LeMinhNhat2901/HR_Analytics_Job_Change_of_Data_Scientists.git
 cd HR_Analytics_Job_Change_of_Data_Scientists
 ```
 
-### Step 2: Create Virtual Environment (Recommended)
+### Step 2: Create Virtual Environment (Recommended) 🧪
 ```bash
 # If you want to work with conda environment
 conda create -n hr_analysis python=3.10.16 # You can choose other python versions (>=3.8)
@@ -170,7 +170,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Install Dependencies 📦
 ```bash
 pip install -r requirements.txt
 ```
@@ -179,9 +179,9 @@ pip install -r requirements.txt
 
 ---
 
-## 5. Usage
+## 5. Usage ▶️
 
-### 5.1 Run Complete Pipeline
+### 5.1 Run Complete Pipeline ⚡
 
 To execute the entire pipeline (Load data → Preprocessing → Train → Evaluate → Visualize):
 
@@ -189,14 +189,14 @@ To execute the entire pipeline (Load data → Preprocessing → Train → Evalua
 python main.py
 ```
 
-### 5.2 Output
+### 5.2 Output 📁
 
 After execution:
 - ✅ Models will be trained and results printed to console
 - 📊 Analysis charts saved to `results/figures/`
 - 📄 Final predictions saved to `results/submission_proba.csv`
 
-### 5.3 Jupyter Notebooks
+### 5.3 Jupyter Notebooks 📓
 
 For detailed analysis, explore notebooks in `notebooks/`:
 - `01_data_exploration.ipynb` - Exploratory Data Analysis
@@ -205,9 +205,9 @@ For detailed analysis, explore notebooks in `notebooks/`:
 
 ---
 
-## 6. Results
+## 6. Results 🏆
 
-### 6.1 Model Performance Comparison
+### 6.1 Model Performance Comparison 📊
 
 After training and evaluation on Test set (20% of dataset):
 
@@ -220,7 +220,7 @@ After training and evaluation on Test set (20% of dataset):
 
 > **Note:** These metrics are illustrative examples. Please check console logs when running `main.py` for exact values.
 
-### 6.2 Visualizations
+### 6.2 Visualizations 📈
 
 Charts automatically generated during execution:
 
@@ -230,7 +230,7 @@ Charts automatically generated during execution:
 
 ![Sample Results](results/figures/confusion_matrix.png)
 
-### 6.3 Key Findings
+### 6.3 Key Findings 🔎
 
 - **Best Model:** Neural Network achieved highest F1-Score (0.5310) and ROC-AUC (0.7654)
 - **Imbalanced Data Impact:** Models show higher precision but lower recall due to class imbalance
@@ -238,7 +238,7 @@ Charts automatically generated during execution:
 
 ---
 
-## 7. Project Structure
+## 7. Project Structure 🗂️
 
 ```
 HR_Analytics_Job_Change_of_Data_Scientists/
@@ -263,7 +263,7 @@ HR_Analytics_Job_Change_of_Data_Scientists/
 └── README.md                 # Project documentation
 ```
 
-### File Descriptions
+### File Descriptions 📄
 
 - **`src/data_processing.py`**: Contains `DataProcessor` class with fit/transform methods for imputation, encoding, and scaling
 - **`src/models.py`**: Pure NumPy implementations of LogisticRegression, NaiveBayes, KNN, and NeuralNetwork classes
@@ -272,29 +272,29 @@ HR_Analytics_Job_Change_of_Data_Scientists/
 
 ---
 
-## 8. Challenges & Solutions
+## 8. Challenges & Solutions ⚔️
 
 Working with the constraint "NumPy only" presented several challenges:
 
-### 8.1 KNN Performance Issues
+### 8.1 KNN Performance Issues 🐌
 
 **Challenge:** Computing distances between each Test point and all Train points using nested for-loops was extremely slow.
 
 **Solution:** Implemented Vectorization and Broadcasting techniques. Instead of direct computation, I applied the identity expansion formula $||A - B||^2$ to convert to matrix multiplication `np.dot`, improving speed by 50-100x.
 
-### 8.2 One-Hot Encoding Implementation
+### 8.2 One-Hot Encoding Implementation 🧩
 
 **Challenge:** Cannot use `pd.get_dummies` or `sklearn.OneHotEncoder`.
 
 **Solution:** Used Broadcasting comparison `(data[:, None] == categories).astype(int)` to create One-Hot matrices efficiently.
 
-### 8.3 Neural Network Backpropagation
+### 8.3 Neural Network Backpropagation 🧯
 
 **Challenge:** Easy to make mistakes when computing matrix derivatives (Matrix Calculus).
 
 **Solution:** Carefully drafted matrix dimensions (shapes) before coding, used `np.dot` carefully to match data dimensions.
 
-### 8.4 Memory Efficiency
+### 8.4 Memory Efficiency 🧠
 
 **Challenge:** Vectorized operations can consume large amounts of memory with big datasets.
 
@@ -302,30 +302,30 @@ Working with the constraint "NumPy only" presented several challenges:
 
 ---
 
-## 9. Future Improvements
+## 9. Future Improvements 🚀
 
 To enhance project results in the future:
 
-### 9.1 Hyperparameter Tuning
+### 9.1 Hyperparameter Tuning 🔧
 - Implement manual Grid Search using NumPy to find optimal parameters (learning rate, number of layers, k neighbors)
 
-### 9.2 Handle Imbalanced Data
+### 9.2 Handle Imbalanced Data ⚖️
 - Implement SMOTE or Random Undersampling algorithms using NumPy to rebalance dataset (Target=1 class is currently underrepresented)
 
-### 9.3 Feature Engineering
+### 9.3 Feature Engineering 🛠️
 - Create new features from existing variables to increase accuracy
 - Implement polynomial features and interaction terms
 
-### 9.4 Advanced Algorithms
+### 9.4 Advanced Algorithms 🌲
 - Implement Decision Trees and Random Forest from scratch
 - Add ensemble methods (Bagging, Boosting)
 
-### 9.5 Cross-Validation
+### 9.5 Cross-Validation 🔁
 - Implement K-Fold Cross-Validation using NumPy for more robust model evaluation
 
 ---
 
-## 10. Contributors
+## 10. Contributors 👥
 
 **Project developed by:**
 
@@ -342,13 +342,13 @@ Contributions, issues, and feature requests are welcome! Feel free to check [iss
 
 ---
 
-## 11. License
+## 11. License 📜
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📚 References
+## 📚 References 🔗
 
 - [Kaggle Dataset](https://www.kaggle.com/arashnic/hr-analytics-job-change-of-data-scientists)
 - [NumPy Documentation](https://numpy.org/doc/)
