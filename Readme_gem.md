@@ -209,16 +209,16 @@ For detailed analysis, explore notebooks in `notebooks/`:
 
 ### 6.1 Model Performance Comparison 📊
 
-After training and evaluation on Test set (20% of dataset):
+After training and evaluation on Test set:
 
 | Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 |-------|----------|-----------|--------|----------|---------|
-| Logistic Regression | 0.7654 | 0.5821 | 0.2456 | 0.3455 | 0.7421 |
-| Naive Bayes | 0.7231 | 0.4512 | 0.5123 | 0.4798 | 0.7102 |
-| KNN (Vectorized) | 0.7456 | 0.5231 | 0.3120 | 0.3909 | 0.6987 |
-| Neural Network | 0.7812 | 0.5910 | 0.4821 | 0.5310 | 0.7654 |
+| Logistic Regression | 0.7653 | 0.6188 | 0.1450 | 0.2349 | 0.7331 | 
+| Naive Bayes | 0.7092 | 0.4325 | 0.5452 | 0.4823 | 0.6832 | 
+| KNN (k=5) | 0.7332 | 0.4465 | 0.3067 | 0.3636 | 0.6787 | 
+| Neural Network | 0.7724 | 0.5889 | 0.2784 | 0.3780 | 0.7397 |
 
-> **Note:** These metrics are illustrative examples. Please check console logs when running `main.py` for exact values.
+> **Note:** These metrics are just for references, you have to run dataset by yourself and get real-life scores. Please check console logs when running `main.py` for exact values.
 
 ### 6.2 Visualizations 📈
 
@@ -232,7 +232,7 @@ Charts automatically generated during execution:
 
 ### 6.3 Key Findings 🔎
 
-- **Best Model:** Neural Network achieved highest F1-Score (0.5310) and ROC-AUC (0.7654)
+- **Best Model:** Naive Bayes achieved highest F1-Score (0.4823), and ROC-AUC (0.6832)
 - **Imbalanced Data Impact:** Models show higher precision but lower recall due to class imbalance
 - **Feature Importance:** `city_development_index`, `experience`, and `education_level` are strong predictors
 
